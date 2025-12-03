@@ -4,6 +4,7 @@ import { FileText, Users } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import UploadForm from '@/components/UploadForm'
 import SessionToggle from '@/components/SessionToggle'
+import DeleteButton from '@/components/DeleteButton'
 
 export const dynamic = 'force-dynamic';
 
@@ -85,9 +86,10 @@ export default async function AdminDashboard() {
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <a href={test.pdf_url} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">
+                                            <a href={test.pdf_url} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline mr-2">
                                                 View PDF
                                             </a>
+                                            <DeleteButton id={test.id} title={test.title} />
                                         </div>
                                     </div>
                                 ))}
