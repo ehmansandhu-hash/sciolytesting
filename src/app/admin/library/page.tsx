@@ -1,7 +1,7 @@
 import { checkLeaderSession } from '../../actions'
 import { redirect } from 'next/navigation'
 import { FileText, ArrowLeft } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 import CreateFolderForm from '@/components/CreateFolderForm'
 import Link from 'next/link'
 import FolderView from '@/components/FolderView'
@@ -16,13 +16,13 @@ export default async function LibraryPage() {
     }
 
     // Fetch Tests
-    const { data: tests } = await supabase
+    const { data: tests } = await supabaseAdmin
         .from('tests')
         .select('*')
         .order('created_at', { ascending: false });
 
     // Fetch Folders
-    const { data: folders } = await supabase
+    const { data: folders } = await supabaseAdmin
         .from('folders')
         .select('*')
         .order('name');
