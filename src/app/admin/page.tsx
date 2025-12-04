@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import UploadForm from '@/components/UploadForm'
 import SessionToggle from '@/components/SessionToggle'
 import DeleteButton from '@/components/DeleteButton'
+import RecentActivity from '@/components/RecentActivity'
 
 export const dynamic = 'force-dynamic';
 
@@ -20,11 +21,11 @@ export default async function AdminDashboard() {
         .select('*')
         .order('created_at', { ascending: false });
 
-    // Fetch Logs
-    const { data: logs } = await supabase
-        .from('logs')
+    // Fetch Sessions
+    const { data: sessions } = await supabase
+        .from('student_sessions')
         .select('*')
-        .order('created_at', { ascending: false })
+        .order('started_at', { ascending: false })
         .limit(50);
 
     // Fetch Session Status
@@ -108,33 +109,7 @@ export default async function AdminDashboard() {
 
                     {/* Sidebar - Logs */}
                     <div className="space-y-6">
-                        <div className="bg-card border border-border rounded-xl p-6 shadow-sm h-full">
-                            <h2 className="text-xl font-semibold flex items-center gap-2 mb-6">
-                                <Users className="w-5 h-5 text-primary" />
-                                Recent Activity
-                            </h2>
-
-                            <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
-                                {logs?.map((log) => (
-                                    <div key={log.id} className="flex items-start gap-3 pb-4 border-b border-border last:border-0 last:pb-0">
-                                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                            <span className="text-xs font-bold text-primary">{log.student_name.charAt(0)}</span>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-medium text-foreground">{log.student_name}</p>
-                                            <p className="text-xs text-muted-foreground">Started {log.test_title}</p>
-                                            <p className="text-xs text-muted-foreground mt-1">
-                                                {new Date(log.created_at).toLocaleTimeString()}
-                                            </p>
-                                        </div>
-                                    </div>
-                                ))}
-
-                                {(!logs || logs.length === 0) && (
-                                    <p className="text-sm text-muted-foreground text-center py-4">No activity yet.</p>
-                                )}
-                            </div>
-                        </div>
+                        <RecentActivity initialLogs={sessions || []} tests={tests || []} />
                     </div>
                 </div>
             </div>

@@ -10,6 +10,10 @@ export const metadata: Metadata = {
   description: "Secure testing platform for Science Olympiad",
 };
 
+import { Toaster } from 'sonner';
+
+// ... imports
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -19,6 +23,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={cn(inter.className, "antialiased min-h-screen bg-background text-foreground")}>
         {children}
+        <Toaster richColors position="top-center" />
       </body>
     </html>
   );

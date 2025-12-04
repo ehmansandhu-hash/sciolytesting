@@ -4,6 +4,7 @@ import { ArrowRight, Clock, AlertCircle, FileText } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { handleTestStart } from '../actions'
 import Link from 'next/link'
+import SessionStatusListener from '@/components/SessionStatusListener'
 
 export const dynamic = 'force-dynamic';
 
@@ -33,6 +34,7 @@ export default async function SelectTestPage() {
 
     return (
         <div className="min-h-screen bg-background p-4 md:p-8">
+            <SessionStatusListener />
             <div className="max-w-4xl mx-auto space-y-8">
                 <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-border pb-6">
                     <div>

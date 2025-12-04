@@ -2,6 +2,7 @@
 
 import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
+import { finishTest } from '@/app/actions'
 import Timer from '@/components/Timer'
 import { FileText, AlertTriangle, Clock } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
@@ -70,11 +71,26 @@ export default function TestPage({ params }: { params: Promise<{ id: string }> }
                     <h1 className="text-lg font-semibold text-foreground">{test.title}</h1>
                 </div>
 
-                <Timer durationMinutes={test.duration_minutes} onTimeUp={handleTimeUp} />
+                <div className="flex items-center gap-4">
+                    <Timer durationMinutes={test.duration_minutes} onTimeUp={handleTimeUp} />
+                    <form action={finishTest}>
+                        <button
+                            type="submit"
+                            onClick={(e) => {
+                                if (!confirm('Are you sure you are finished?')) {
+                                    e.preventDefault();
+                                }
+                            }}
+                            className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md text-sm font-medium hover:bg-secondary/80 transition-colors"
+                        >
+                            I&apos;m Finished
+                        </button>
+                    </form>
+                </div>
             </header>
 
             {/* PDF Viewer */}
-            <div className="flex-1 bg-zinc-100 dark:bg-zinc-900 relative overflow-hidden">
+            < div className="flex-1 bg-zinc-100 dark:bg-zinc-900 relative overflow-hidden" >
                 <iframe
                     src={`${test.pdf_url}#toolbar=0&navpanes=0`}
                     className="w-full h-full border-none"
@@ -83,8 +99,8 @@ export default function TestPage({ params }: { params: Promise<{ id: string }> }
 
                 {/* Overlay to prevent simple right-click save (not foolproof but helps) */}
                 <div className="absolute inset-0 pointer-events-none shadow-inner" />
-            </div>
-        </div>
+            </div >
+        </div >
     )
 }
 

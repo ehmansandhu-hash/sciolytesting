@@ -1,8 +1,10 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useEffect, useState } from 'react'
 import { uploadTest } from '@/app/actions'
 import { Upload, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
 
 const initialState = {
     error: '',
@@ -10,19 +12,27 @@ const initialState = {
 }
 
 export default function UploadForm() {
+    const router = useRouter();
+    const [formKey, setFormKey] = useState(0);
+
     // @ts-ignore
     const [state, formAction, isPending] = useActionState(async (prev: any, formData: FormData) => {
         const result = await uploadTest(prev, formData);
-        if (result?.success) {
-            // Reset form manually or reload page
-            window.location.reload();
-            return { success: true };
-        }
         return result;
     }, initialState)
 
+    useEffect(() => {
+        if (state?.success) {
+            toast.success('Test uploaded successfully');
+            router.refresh();
+            setFormKey(prev => prev + 1); // Reset form
+        } else if (state?.error) {
+            toast.error(state.error);
+        }
+    }, [state, router]);
+
     return (
-        <form action={formAction} className="space-y-4 mt-4">
+        <form key={formKey} action={formAction} className="space-y-4 mt-4">
             <div>
                 <label className="block text-sm font-medium mb-1">Test Title</label>
                 <input

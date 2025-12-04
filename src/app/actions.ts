@@ -121,16 +121,52 @@ export async function deleteTest(id: string) {
 }
 
 export async function handleTestStart(testId: string, testTitle: string) {
+    // Check if session is active
+    const { data: settings } = await supabase
+        .from('settings')
+        .select('value')
+        .eq('key', 'session_active')
+        .single();
+
+    if (settings?.value !== 'true') {
+        redirect('/');
+    }
+
     const cookieStore = await cookies();
     const studentName = cookieStore.get('student_name')?.value;
 
     if (studentName) {
-        await supabase.from('logs').insert({
+        // Create a new session
+        const { data, error } = await supabase.from('student_sessions').insert({
             student_name: studentName,
             test_id: testId,
-            test_title: testTitle
-        });
+            test_title: testTitle,
+            status: 'in_progress',
+            started_at: new Date().toISOString()
+        }).select().single();
+
+        if (data) {
+            cookieStore.set('current_session_id', data.id, { httpOnly: true });
+        }
     }
 
     redirect(`/test/${testId}`);
+}
+
+export async function finishTest() {
+    const cookieStore = await cookies();
+    const sessionId = cookieStore.get('current_session_id')?.value;
+
+    if (sessionId) {
+        await supabase.from('student_sessions')
+            .update({
+                status: 'completed',
+                completed_at: new Date().toISOString()
+            })
+            .eq('id', sessionId);
+
+        cookieStore.delete('current_session_id');
+    }
+
+    redirect('/select');
 }
