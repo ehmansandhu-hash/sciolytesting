@@ -11,7 +11,7 @@ const initialState = {
     success: false
 }
 
-export default function UploadForm() {
+export default function UploadForm({ folders }: { folders: any[] }) {
     const router = useRouter();
     const [formKey, setFormKey] = useState(0);
 
@@ -42,6 +42,21 @@ export default function UploadForm() {
                     placeholder="e.g. Anatomy & Physiology"
                     className="w-full px-3 py-2 rounded-md border border-input bg-background"
                 />
+            </div>
+
+            <div>
+                <label className="block text-sm font-medium mb-1">Folder (Optional)</label>
+                <select
+                    name="folderId"
+                    className="w-full px-3 py-2 rounded-md border border-input bg-background"
+                >
+                    <option value="null">Uncategorized</option>
+                    {folders.map((folder) => (
+                        <option key={folder.id} value={folder.id}>
+                            {folder.name}
+                        </option>
+                    ))}
+                </select>
             </div>
 
             <div>

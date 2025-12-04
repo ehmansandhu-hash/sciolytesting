@@ -57,6 +57,7 @@ export async function uploadTest(prevState: any, formData: FormData) {
 
     const title = formData.get('title') as string;
     const duration = parseInt(formData.get('duration') as string);
+    const folderId = formData.get('folderId') as string;
     const file = formData.get('file') as File;
 
     if (!title || !file || !duration) {
@@ -86,7 +87,8 @@ export async function uploadTest(prevState: any, formData: FormData) {
             title,
             duration_minutes: duration,
             pdf_url: publicUrl,
-            is_active: true
+            is_active: true,
+            folder_id: folderId && folderId !== 'null' ? folderId : null
         });
 
     if (dbError) {
@@ -114,6 +116,37 @@ export async function deleteTest(id: string) {
 
     const { error } = await supabase
         .from('tests')
+        .delete()
+        .eq('id', id);
+
+    if (error) throw error;
+}
+
+export async function createFolder(prevState: any, formData: FormData) {
+    const isLeader = await checkLeaderSession();
+    if (!isLeader) return { error: 'Unauthorized' };
+
+    const name = formData.get('name') as string;
+    if (!name) return { error: 'Name is required' };
+
+    const { error } = await supabase
+        .from('folders')
+        .insert({ name });
+
+    if (error) {
+        if (error.code === '23505') return { error: 'Folder already exists' };
+        return { error: 'Failed to create folder' };
+    }
+
+    return { success: true };
+}
+
+export async function deleteFolder(id: string) {
+    const isLeader = await checkLeaderSession();
+    if (!isLeader) throw new Error('Unauthorized');
+
+    const { error } = await supabase
+        .from('folders')
         .delete()
         .eq('id', id);
 
@@ -179,6 +212,30 @@ export async function updateScore(sessionId: string, score: number) {
         .from('student_sessions')
         .update({ score })
         .eq('id', sessionId);
+
+    if (error) throw error;
+}
+
+export async function toggleTestActive(id: string, isActive: boolean) {
+    const isLeader = await checkLeaderSession();
+    if (!isLeader) throw new Error('Unauthorized');
+
+    const { error } = await supabase
+        .from('tests')
+        .update({ is_active: isActive })
+        .eq('id', id);
+
+    if (error) throw error;
+}
+
+export async function toggleFolderActive(folderId: string, isActive: boolean) {
+    const isLeader = await checkLeaderSession();
+    if (!isLeader) throw new Error('Unauthorized');
+
+    const { error } = await supabase
+        .from('tests')
+        .update({ is_active: isActive })
+        .eq('folder_id', folderId);
 
     if (error) throw error;
 }
