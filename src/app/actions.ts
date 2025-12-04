@@ -170,3 +170,15 @@ export async function finishTest() {
 
     redirect('/select');
 }
+
+export async function updateScore(sessionId: string, score: number) {
+    const isLeader = await checkLeaderSession();
+    if (!isLeader) throw new Error('Unauthorized');
+
+    const { error } = await supabase
+        .from('student_sessions')
+        .update({ score })
+        .eq('id', sessionId);
+
+    if (error) throw error;
+}

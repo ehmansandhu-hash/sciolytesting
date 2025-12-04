@@ -6,6 +6,7 @@ import UploadForm from '@/components/UploadForm'
 import SessionToggle from '@/components/SessionToggle'
 import DeleteButton from '@/components/DeleteButton'
 import RecentActivity from '@/components/RecentActivity'
+import Link from 'next/link'
 
 export const dynamic = 'force-dynamic';
 
@@ -65,6 +66,9 @@ export default async function AdminDashboard() {
                                     <FileText className="w-5 h-5 text-primary" />
                                     Uploaded Tests
                                 </h2>
+                                <Link href="/admin/grading" className="text-sm font-medium text-primary hover:underline">
+                                    Grading & Results &rarr;
+                                </Link>
                             </div>
 
                             <div className="space-y-4 mb-8">
