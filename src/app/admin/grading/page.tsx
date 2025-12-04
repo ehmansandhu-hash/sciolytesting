@@ -1,6 +1,7 @@
-import { checkLeaderSession, updateScore } from '@/app/actions'
+import { checkLeaderSession } from '@/app/actions'
 import { redirect } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase-admin'
+import { StudentSession } from '@/lib/types'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import ExportButton from '@/components/ExportButton'
@@ -15,7 +16,7 @@ export default async function GradingPage() {
     }
 
     // Fetch Completed Sessions
-    const { data: sessions } = await supabase
+    const { data: sessions } = await supabaseAdmin
         .from('student_sessions')
         .select('*')
         .eq('status', 'completed')
@@ -23,7 +24,7 @@ export default async function GradingPage() {
         .order('score', { ascending: false }); // High scores first
 
     // Group by Test Title
-    const groupedSessions: Record<string, any[]> = {};
+    const groupedSessions: Record<string, StudentSession[]> = {};
     sessions?.forEach(session => {
         if (!groupedSessions[session.test_title]) {
             groupedSessions[session.test_title] = [];
@@ -86,7 +87,7 @@ export default async function GradingPage() {
                                                         {durationMinutes} mins
                                                     </td>
                                                     <td className="px-6 py-4 text-right">
-                                                        <ScoreInput sessionId={session.id} initialScore={session.score} />
+                                                        <ScoreInput sessionId={session.id} initialScore={session.score ?? null} />
                                                     </td>
                                                 </tr>
                                             )

@@ -2,8 +2,9 @@
 
 import { useState } from 'react'
 import { ChevronRight, ChevronDown, Folder, FileText } from 'lucide-react'
+import { Folder as FolderType, Test } from '@/lib/types'
 
-export default function PublicFolderView({ folder, tests }: { folder: any, tests: any[] }) {
+export default function PublicFolderView({ folder, tests }: { folder: FolderType, tests: Test[] }) {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
@@ -37,7 +38,7 @@ export default function PublicFolderView({ folder, tests }: { folder: any, tests
     )
 }
 
-function PublicTestCard({ test }: { test: any }) {
+function PublicTestCard({ test }: { test: Test }) {
     return (
         <div className="flex items-center justify-between p-4 bg-background rounded-lg border border-border hover:border-primary/50 transition-colors group">
             <div className="flex items-center gap-4">

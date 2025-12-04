@@ -1,253 +1,30 @@
-'use server'
+// Re-export all actions for backward compatibility
+// Components can import from '@/app/actions' or specific files
 
-import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
+export {
+    loginLeader,
+    logoutLeader,
+    checkLeaderSession,
+    requireLeaderSession
+} from './actions/auth'
 
-import { supabase } from '@/lib/supabase'
+export {
+    uploadTest,
+    deleteTest,
+    toggleTestActive,
+    toggleTestPublished
+} from './actions/tests'
 
-export async function loginLeader(prevState: any, formData: FormData) {
-    const password = formData.get('password')
-    const correctPassword = process.env.LEADER_PASSWORD || 'admin123' // Fallback for dev
+export {
+    createFolder,
+    deleteFolder,
+    toggleFolderActive
+} from './actions/folders'
 
-    if (password === correctPassword) {
-        (await cookies()).set('leader_session', 'true', { httpOnly: true, secure: true })
-        redirect('/admin')
-    } else {
-        return { error: 'Incorrect password' }
-    }
-}
-
-export async function logoutLeader() {
-    (await cookies()).delete('leader_session')
-    redirect('/')
-}
-
-export async function checkLeaderSession() {
-    const session = (await cookies()).get('leader_session')
-    return session?.value === 'true'
-}
-
-export async function startStudentSession(prevState: any, formData: FormData) {
-    const name = formData.get('name') as string;
-    if (!name || name.trim().length === 0) {
-        return { error: 'Name is required' };
-    }
-
-    // Check if session is active
-    const { data: settings } = await supabase
-        .from('settings')
-        .select('value')
-        .eq('key', 'session_active')
-        .single();
-
-    if (settings?.value !== 'true') {
-        return { error: 'Testing session is currently closed.' };
-    }
-
-    // Store in cookie
-    (await cookies()).set('student_name', name, { httpOnly: true });
-    redirect('/select');
-}
-
-export async function uploadTest(prevState: any, formData: FormData) {
-    const isLeader = await checkLeaderSession();
-    if (!isLeader) {
-        return { error: 'Unauthorized' };
-    }
-
-    const title = formData.get('title') as string;
-    const duration = parseInt(formData.get('duration') as string);
-    const folderId = formData.get('folderId') as string;
-    const file = formData.get('file') as File;
-
-    if (!title || !file || !duration) {
-        return { error: 'All fields are required' };
-    }
-
-    // 1. Upload PDF
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
-    const { error: uploadError } = await supabase.storage
-        .from('pdfs')
-        .upload(fileName, file);
-
-    if (uploadError) {
-        console.error('Upload error:', uploadError);
-        return { error: 'Failed to upload PDF' };
-    }
-
-    const { data: { publicUrl } } = supabase.storage
-        .from('pdfs')
-        .getPublicUrl(fileName);
-
-    // 2. Insert into DB
-    const { error: dbError } = await supabase
-        .from('tests')
-        .insert({
-            title,
-            duration_minutes: duration,
-            pdf_url: publicUrl,
-            is_active: true,
-            folder_id: folderId && folderId !== 'null' ? folderId : null
-        });
-
-    if (dbError) {
-        console.error('DB error:', dbError);
-        return { error: 'Failed to save test details' };
-    }
-
-    return { success: true };
-}
-
-export async function toggleSession(isActive: boolean) {
-    const isLeader = await checkLeaderSession();
-    if (!isLeader) throw new Error('Unauthorized');
-
-    const { error } = await supabase
-        .from('settings')
-        .upsert({ key: 'session_active', value: String(isActive) });
-
-    if (error) throw error;
-}
-
-export async function deleteTest(id: string) {
-    const isLeader = await checkLeaderSession();
-    if (!isLeader) throw new Error('Unauthorized');
-
-    const { error } = await supabase
-        .from('tests')
-        .delete()
-        .eq('id', id);
-
-    if (error) throw error;
-}
-
-export async function createFolder(prevState: any, formData: FormData) {
-    const isLeader = await checkLeaderSession();
-    if (!isLeader) return { error: 'Unauthorized' };
-
-    const name = formData.get('name') as string;
-    if (!name) return { error: 'Name is required' };
-
-    const { error } = await supabase
-        .from('folders')
-        .insert({ name });
-
-    if (error) {
-        if (error.code === '23505') return { error: 'Folder already exists' };
-        return { error: 'Failed to create folder' };
-    }
-
-    return { success: true };
-}
-
-export async function deleteFolder(id: string) {
-    const isLeader = await checkLeaderSession();
-    if (!isLeader) throw new Error('Unauthorized');
-
-    const { error } = await supabase
-        .from('folders')
-        .delete()
-        .eq('id', id);
-
-    if (error) throw error;
-}
-
-export async function handleTestStart(testId: string, testTitle: string) {
-    // Check if session is active
-    const { data: settings } = await supabase
-        .from('settings')
-        .select('value')
-        .eq('key', 'session_active')
-        .single();
-
-    if (settings?.value !== 'true') {
-        redirect('/');
-    }
-
-    const cookieStore = await cookies();
-    const studentName = cookieStore.get('student_name')?.value;
-
-    if (studentName) {
-        // Create a new session
-        const { data, error } = await supabase.from('student_sessions').insert({
-            student_name: studentName,
-            test_id: testId,
-            test_title: testTitle,
-            status: 'in_progress',
-            started_at: new Date().toISOString()
-        }).select().single();
-
-        if (data) {
-            cookieStore.set('current_session_id', data.id, { httpOnly: true });
-        }
-    }
-
-    redirect(`/test/${testId}`);
-}
-
-export async function finishTest() {
-    const cookieStore = await cookies();
-    const sessionId = cookieStore.get('current_session_id')?.value;
-
-    if (sessionId) {
-        await supabase.from('student_sessions')
-            .update({
-                status: 'completed',
-                completed_at: new Date().toISOString()
-            })
-            .eq('id', sessionId);
-
-        cookieStore.delete('current_session_id');
-    }
-
-    redirect('/select');
-}
-
-export async function updateScore(sessionId: string, score: number) {
-    const isLeader = await checkLeaderSession();
-    if (!isLeader) throw new Error('Unauthorized');
-
-    const { error } = await supabase
-        .from('student_sessions')
-        .update({ score })
-        .eq('id', sessionId);
-
-    if (error) throw error;
-}
-
-export async function toggleTestActive(id: string, isActive: boolean) {
-    const isLeader = await checkLeaderSession();
-    if (!isLeader) throw new Error('Unauthorized');
-
-    const { error } = await supabase
-        .from('tests')
-        .update({ is_active: isActive })
-        .eq('id', id);
-
-    if (error) throw error;
-}
-
-export async function toggleFolderActive(folderId: string, isActive: boolean) {
-    const isLeader = await checkLeaderSession();
-    if (!isLeader) throw new Error('Unauthorized');
-
-    const { error } = await supabase
-        .from('tests')
-        .update({ is_active: isActive })
-        .eq('folder_id', folderId);
-
-    if (error) throw error;
-}
-
-export async function toggleTestPublished(id: string, isPublished: boolean) {
-    const isLeader = await checkLeaderSession();
-    if (!isLeader) throw new Error('Unauthorized');
-
-    const { error } = await supabase
-        .from('tests')
-        .update({ is_published: isPublished })
-        .eq('id', id);
-
-    if (error) throw error;
-}
+export {
+    startStudentSession,
+    handleTestStart,
+    finishTest,
+    updateScore,
+    toggleSession
+} from './actions/sessions'

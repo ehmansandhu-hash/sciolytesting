@@ -1,7 +1,7 @@
 import { checkLeaderSession } from '../actions'
 import { redirect } from 'next/navigation'
 import { FileText, Users } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 import UploadForm from '@/components/UploadForm'
 import SessionToggle from '@/components/SessionToggle'
 import RecentActivity from '@/components/RecentActivity'
@@ -16,25 +16,25 @@ export default async function AdminDashboard() {
     }
 
     // Fetch Folders (for UploadForm)
-    const { data: folders } = await supabase
+    const { data: folders } = await supabaseAdmin
         .from('folders')
         .select('*')
         .order('name');
 
     // Fetch Tests (for RecentActivity timer)
-    const { data: tests } = await supabase
+    const { data: tests } = await supabaseAdmin
         .from('tests')
         .select('*');
 
     // Fetch Sessions
-    const { data: sessions } = await supabase
+    const { data: sessions } = await supabaseAdmin
         .from('student_sessions')
         .select('*')
         .order('started_at', { ascending: false })
         .limit(50);
 
     // Fetch Session Status
-    const { data: settings } = await supabase
+    const { data: settings } = await supabaseAdmin
         .from('settings')
         .select('value')
         .eq('key', 'session_active')

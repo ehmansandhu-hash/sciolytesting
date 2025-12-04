@@ -6,8 +6,9 @@ import TestCard from './TestCard'
 import { deleteFolder, toggleFolderActive } from '@/app/actions'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { Folder as FolderType, Test } from '@/lib/types'
 
-export default function FolderView({ folder, tests }: { folder: any, tests: any[] }) {
+export default function FolderView({ folder, tests }: { folder: FolderType, tests: Test[] }) {
     const [isOpen, setIsOpen] = useState(false);
     const [isPending, setIsPending] = useState(false);
     const router = useRouter();

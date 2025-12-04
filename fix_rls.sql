@@ -21,7 +21,6 @@ create policy "Allow anon update settings"
 on public.settings for update
 to anon
 using (true);
-
 create policy "Allow anon insert settings"
 on public.settings for insert
 to anon

@@ -1,7 +1,8 @@
 import { supabase } from '@/lib/supabase'
-import { FileText, Folder, ChevronRight, ChevronDown, ArrowLeft } from 'lucide-react'
+import { FileText, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import PublicFolderView from '@/components/PublicFolderView'
+import { Test } from '@/lib/types'
 
 export const dynamic = 'force-dynamic';
 
@@ -21,7 +22,7 @@ export default async function StudentLibraryPage() {
 
     // Group Tests by Folder
     const uncategorizedTests = tests?.filter(t => !t.folder_id) || [];
-    const testsByFolder: Record<string, any[]> = {};
+    const testsByFolder: Record<string, Test[]> = {};
     folders?.forEach(f => {
         testsByFolder[f.id] = tests?.filter(t => t.folder_id === f.id) || [];
     });
@@ -74,7 +75,7 @@ export default async function StudentLibraryPage() {
     )
 }
 
-function PublicTestCard({ test }: { test: any }) {
+function PublicTestCard({ test }: { test: Test }) {
     return (
         <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg border border-border hover:border-primary/50 transition-colors group">
             <div className="flex items-center gap-4">

@@ -5,9 +5,10 @@ import DeleteButton from './DeleteButton'
 import { toggleTestActive, toggleTestPublished } from '@/app/actions'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { Test } from '@/lib/types'
 import { useState } from 'react'
 
-export default function TestCard({ test }: { test: any }) {
+export default function TestCard({ test }: { test: Test }) {
     const router = useRouter();
     const [isPending, setIsPending] = useState(false);
 
