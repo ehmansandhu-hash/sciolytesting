@@ -1,8 +1,8 @@
 'use client'
 
-import { FileText, Power } from 'lucide-react'
+import { FileText, Power, Globe } from 'lucide-react'
 import DeleteButton from './DeleteButton'
-import { toggleTestActive } from '@/app/actions'
+import { toggleTestActive, toggleTestPublished } from '@/app/actions'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { useState } from 'react'
@@ -19,6 +19,19 @@ export default function TestCard({ test }: { test: any }) {
             toast.success(test.is_active ? 'Test deactivated' : 'Test activated');
         } catch (error) {
             toast.error('Failed to update test status');
+        } finally {
+            setIsPending(false);
+        }
+    }
+
+    const handlePublishToggle = async () => {
+        setIsPending(true);
+        try {
+            await toggleTestPublished(test.id, !test.is_published);
+            router.refresh();
+            toast.success(test.is_published ? 'Test unpublished' : 'Test published to Library');
+        } catch (error) {
+            toast.error('Failed to update publish status');
         } finally {
             setIsPending(false);
         }
@@ -43,6 +56,15 @@ export default function TestCard({ test }: { test: any }) {
                         >
                             <Power className="w-3 h-3" />
                             {test.is_active ? 'Active' : 'Inactive'}
+                        </button>
+                        <button
+                            onClick={handlePublishToggle}
+                            disabled={isPending}
+                            className={`text-xs px-2 py-0.5 rounded-full transition-colors flex items-center gap-1 ${test.is_published ? 'bg-blue-500/10 text-blue-500 hover:bg-blue-500/20' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
+                            title="Visible in Past Test Library"
+                        >
+                            <Globe className="w-3 h-3" />
+                            {test.is_published ? 'Published' : 'Private'}
                         </button>
                     </div>
                 </div>

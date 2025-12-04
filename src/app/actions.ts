@@ -239,3 +239,15 @@ export async function toggleFolderActive(folderId: string, isActive: boolean) {
 
     if (error) throw error;
 }
+
+export async function toggleTestPublished(id: string, isPublished: boolean) {
+    const isLeader = await checkLeaderSession();
+    if (!isLeader) throw new Error('Unauthorized');
+
+    const { error } = await supabase
+        .from('tests')
+        .update({ is_published: isPublished })
+        .eq('id', id);
+
+    if (error) throw error;
+}

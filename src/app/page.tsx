@@ -65,7 +65,12 @@ export default function Home() {
           </div>
         </form>
 
-        <div className="text-center mt-8">
+        <div className="flex flex-col items-center gap-4 mt-8">
+          <a href="/library" className="text-sm font-medium text-primary hover:underline flex items-center gap-2">
+            <span className="bg-primary/10 p-1.5 rounded-full">📚</span>
+            View Past Test Library
+          </a>
+
           <a href="/login" className="text-xs text-muted-foreground hover:text-primary transition-colors">
             Leader Login
           </a>
