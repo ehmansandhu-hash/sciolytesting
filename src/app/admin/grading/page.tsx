@@ -1,8 +1,9 @@
 import { checkLeaderSession, updateScore } from '@/app/actions'
 import { redirect } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { ArrowLeft, Download, Save } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
+import ExportButton from '@/components/ExportButton'
 import ScoreInput from '@/components/ScoreInput'
 
 export const dynamic = 'force-dynamic';
@@ -43,10 +44,7 @@ export default async function GradingPage() {
                             <p className="text-muted-foreground mt-1">Enter scores for completed tests</p>
                         </div>
                     </div>
-                    {/* Placeholder for CSV Export */}
-                    <button className="flex items-center gap-2 px-4 py-2 bg-muted text-muted-foreground rounded-lg hover:text-foreground transition-colors" disabled>
-                        <Download className="w-4 h-4" /> Export CSV
-                    </button>
+                    <ExportButton sessions={sessions || []} />
                 </header>
 
                 <div className="space-y-8">

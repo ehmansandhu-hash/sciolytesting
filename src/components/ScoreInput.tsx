@@ -1,11 +1,13 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { updateScore } from '@/app/actions'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
 
 export default function ScoreInput({ sessionId, initialScore }: { sessionId: string, initialScore: number | null }) {
+    const router = useRouter()
     const [score, setScore] = useState<string>(initialScore?.toString() || '')
     const [isSaving, setIsSaving] = useState(false)
 
@@ -20,6 +22,7 @@ export default function ScoreInput({ sessionId, initialScore }: { sessionId: str
         try {
             await updateScore(sessionId, score === '' ? 0 : numScore) // Default to 0 if cleared, or handle null better if needed
             toast.success('Score saved')
+            router.refresh()
         } catch (error) {
             toast.error('Failed to save score')
             console.error(error)
